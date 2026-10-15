@@ -1,0 +1,195 @@
+<div class="min-h-screen bg-white font-sans text-gray-800 antialiased">
+  <aside class="fixed inset-y-0 left-0 hidden w-56 border-r border-gray-200 bg-[#faf9f7] px-4 py-8 xl:block">
+    <a href="#overview" class="flex items-center gap-3 px-2 text-sm font-semibold"><span class="grid h-7 w-7 place-items-center rounded-md bg-black font-serif text-lg text-white">T</span> TaskCorp</a>
+    <p class="mb-3 mt-12 px-2 text-xs font-medium text-gray-400">Workspace</p>
+    <nav aria-label="Navegação" class="space-y-1 text-sm">
+      <a href="#overview" class="flex items-center gap-3 rounded-md bg-gray-200/60 px-3 py-2 font-medium"><span aria-hidden="true">▤</span> Insights</a>
+      <a href="#board" class="flex items-center gap-3 rounded-md px-3 py-2 text-gray-500 hover:bg-gray-100"><span aria-hidden="true">▦</span> Tarefas</a>
+      <a href="#team" class="flex items-center gap-3 rounded-md px-3 py-2 text-gray-500 hover:bg-gray-100"><span aria-hidden="true">♧</span> Pessoas</a>
+      <a href="#focus" class="flex items-center gap-3 rounded-md px-3 py-2 text-gray-500 hover:bg-gray-100"><span aria-hidden="true">◷</span> Horas de foco</a>
+    </nav>
+    <p class="absolute bottom-8 px-2 text-xs text-gray-400">Um espaço para fazer acontecer.</p>
+  </aside>
+  <div class="xl:ml-56">
+    <header class="flex items-center justify-between border-b border-gray-100 px-6 py-4 text-xs text-gray-500 sm:px-10">
+      <span>Workspace <span class="mx-2 text-gray-300">/</span> <span class="text-gray-800">Insights</span></span>
+      <span>Time de desenvolvimento</span>
+    </header>
+    <main id="overview" class="mx-auto max-w-7xl space-y-10 px-6 py-10 sm:px-10 lg:py-14">
+      <section>
+        <div aria-hidden="true" class="mb-5 text-4xl text-gray-800">▤</div>
+        <h1 class="text-3xl font-bold tracking-tight sm:text-4xl">TaskCorp Insights</h1>
+        <p class="mt-3 text-sm leading-6 text-gray-500">Clareza para o seu time. Espaço para o que importa.</p>
+        <div class="mt-6 flex flex-wrap gap-x-6 gap-y-2 text-xs text-gray-500">
+          <span><strong class="font-medium text-gray-800">{{ tasks().length }}</strong> tarefas</span>
+          <span><strong class="font-medium text-gray-800">{{ completed() }}</strong> concluídas</span>
+          <span><strong class="font-medium text-gray-800">{{ users().length }}</strong> pessoas no time</span>
+        </div>
+      </section>
+      @if (error()) {
+        <p role="alert" class="rounded-md border border-gray-200 bg-gray-50 px-4 py-3 text-sm">{{ error() }}</p>
+      }
+      @if (feedback()) {
+        <p role="status" class="rounded-md border border-gray-200 px-4 py-3 text-sm">✓ {{ feedback() }}</p>
+      }
+      <section id="board" aria-labelledby="board-title" class="scroll-mt-6">
+        <div class="mb-6 flex items-center justify-between gap-4 border-b border-gray-200 pb-3">
+          <h2 id="board-title" class="text-sm font-semibold">▦ &nbsp; Quadro de tarefas</h2>
+          <button type="button" (click)="load()" [disabled]="loading() || savingTask() || savingUser() || savingFocus() || movingIds().size > 0" class="rounded-md border border-gray-200 px-3 py-1.5 text-xs hover:bg-gray-100 disabled:opacity-40">{{ loading() ? 'Carregando…' : 'Atualizar' }}</button>
+        </div>
+        @if (loading()) {
+          <p role="status" class="py-10 text-sm text-gray-500">Carregando tarefas e pessoas…</p>
+        } @else {
+          <div class="grid gap-6 md:grid-cols-3">
+            @for (column of columns(); track column.status) {
+              <section [attr.aria-label]="column.status" class="min-w-0">
+                <div class="mb-4 flex items-center gap-2 text-xs">
+                  <h3 class="rounded bg-gray-100 px-2 py-1 font-medium"><span aria-hidden="true" class="mr-1.5 text-gray-400">●</span>{{ column.status }}</h3>
+                  <span class="text-gray-400">{{ column.tasks.length }}</span>
+                </div>
+                <div class="min-h-40 space-y-3">
+                  @for (task of column.tasks; track task.id) {
+                    <article class="rounded-md border border-gray-200 bg-white p-4 transition-colors hover:border-gray-300">
+                      <p class="text-[10px] tracking-wide text-gray-400">TASK-{{ task.id }}</p>
+                      <h4 class="mt-2 break-words text-sm font-medium leading-6">{{ task.title }}</h4>
+                      @if (task.description) {
+                        <p class="mt-2 whitespace-pre-wrap break-words text-xs leading-5 text-gray-500">{{ task.description }}</p>
+                      }
+                      <div class="mt-5 flex items-center gap-2 text-xs text-gray-500"><span aria-hidden="true" class="grid h-5 w-5 place-items-center rounded bg-gray-100 text-[10px]">{{ userName(task.assigned_to).charAt(0) }}</span>{{ userName(task.assigned_to) }}</div>
+                      @if (nextStatus(task.status); as next) {
+                        <button type="button" (click)="moveTask(task)" [disabled]="movingIds().has(task.id) || deletingIds().has(task.id) || !canManageTask(task) || !apiReady()" [attr.aria-label]="'Mover ' + task.title + ' para ' + next" class="mt-4 rounded-md border border-gray-200 px-2.5 py-1.5 text-xs text-gray-600 hover:bg-gray-100 disabled:opacity-40">{{ movingIds().has(task.id) ? 'Salvando…' : 'Mover para ' + next + ' →' }}</button>
+                      } @else {
+                        <p class="mt-4 py-1.5 text-xs text-gray-400">✓ Concluída</p>
+                      }
+                      @if (canManageTask(task)) {
+                        @if (pendingDeletion() === task.id) {
+                          <div class="mt-3 rounded-md border border-gray-200 p-3">
+                            <p class="text-xs text-gray-600">Excluir esta tarefa do quadro?</p>
+                            <div class="mt-2 flex flex-wrap gap-2">
+                              <button type="button" (click)="deleteTask(task)" [disabled]="deletingIds().has(task.id) || movingIds().has(task.id) || !apiReady()" class="rounded-md bg-black px-3 py-1.5 text-xs text-white hover:bg-gray-800 disabled:opacity-40">{{ deletingIds().has(task.id) ? 'Excluindo…' : 'Confirmar exclusão' }}</button>
+                              <button type="button" (click)="pendingDeletion.set(null)" [disabled]="deletingIds().has(task.id)" class="rounded-md border border-gray-200 px-3 py-1.5 text-xs hover:bg-gray-100">Cancelar</button>
+                            </div>
+                          </div>
+                        } @else {
+                          <button type="button" (click)="pendingDeletion.set(task.id)" [disabled]="movingIds().has(task.id) || deletingIds().size > 0 || !apiReady()" [attr.aria-label]="'Excluir tarefa ' + task.title" class="mt-3 block rounded-md border border-gray-200 px-2.5 py-1.5 text-xs text-gray-600 hover:bg-gray-100 disabled:opacity-40">Excluir</button>
+                        }
+                      }
+                    </article>
+                  } @empty {
+                    <p class="rounded-md border border-dashed border-gray-200 p-6 text-center text-xs text-gray-400">Nenhuma tarefa por aqui.</p>
+                  }
+                </div>
+              </section>
+            }
+          </div>
+        }
+      </section>
+      <div class="grid gap-8 border-t border-gray-200 pt-8 lg:grid-cols-3">
+        <section aria-labelledby="task-title">
+          <h2 id="task-title" class="text-sm font-semibold">Nova tarefa</h2>
+          <p class="mt-1 text-xs leading-5 text-gray-500">Transforme a próxima ideia em uma entrega.</p>
+          <form [formGroup]="taskForm" (ngSubmit)="createTask()" class="mt-5">
+            <fieldset [disabled]="savingTask() || loading() || !apiReady() || users().length === 0" class="space-y-4 disabled:opacity-40">
+              <div><label for="title" class="field-label">Título</label><input id="title" formControlName="title" maxlength="200" placeholder="O que precisa ser feito?" class="field-input" /></div>
+              <div><label for="description" class="field-label">Descrição <span class="font-normal text-gray-400">· opcional</span></label><textarea id="description" formControlName="description" maxlength="2000" rows="2" placeholder="Adicione um pouco de contexto…" class="field-input"></textarea></div>
+              <div><label for="assigned" class="field-label">Responsável</label><select id="assigned" formControlName="assigned_to" class="field-input"><option [ngValue]="null">Selecione uma pessoa</option>@for (user of assignees(); track user.id) { <option [ngValue]="user.id">{{ user.name }}</option> }</select></div>
+              @if (taskForm.invalid && taskForm.touched) { <p role="alert" class="text-xs text-gray-600">Preencha o título e selecione o responsável. A descrição pode ter até 2000 caracteres.</p> }
+              <button type="submit" class="primary-button">{{ savingTask() ? 'Criando…' : 'Criar tarefa' }}</button>
+            </fieldset>
+          </form>
+        </section>
+        <section id="focus" aria-labelledby="focus-title" class="scroll-mt-6">
+          <h2 id="focus-title" class="text-sm font-semibold">Horas de foco</h2>
+          <p class="mt-1 text-xs leading-5 text-gray-500">Um registro do tempo dedicado ao trabalho.</p>
+          <form [formGroup]="focusForm" (ngSubmit)="logFocus()" class="mt-5">
+            <fieldset [disabled]="savingFocus() || loading() || !apiReady() || users().length === 0" class="space-y-4 disabled:opacity-40">
+              <div><label for="focus-user" class="field-label">Usuário</label><select id="focus-user" formControlName="user_id" class="field-input"><option [ngValue]="null">Selecione uma pessoa</option>@for (user of assignees(); track user.id) { <option [ngValue]="user.id">{{ user.name }}</option> }</select></div>
+              <div><label for="minutes" class="field-label">Duração em minutos</label><input id="minutes" type="number" formControlName="duration_minutes" min="1" max="1440" step="1" aria-describedby="minutes-help" class="field-input" /><p id="minutes-help" class="mt-2 text-xs text-gray-400">De 1 a 1440 minutos. 90 min = 1h30.</p></div>
+              @if (focusForm.invalid && focusForm.touched) { <p role="alert" class="text-xs text-gray-600">Selecione um usuário e informe minutos inteiros entre 1 e 1440.</p> }
+              <button type="submit" class="primary-button">{{ savingFocus() ? 'Registrando…' : 'Registrar foco' }}</button>
+            </fieldset>
+          </form>
+          @if (!loading() && users().length === 0) { <p class="mt-4 text-xs text-gray-500">Nenhuma pessoa disponível. Verifique a conexão e cadastre um usuário.</p> }
+        </section>
+        @if (auth.user()?.role === 'Admin') {
+        <section id="team" aria-labelledby="user-title" class="scroll-mt-6">
+          <h2 id="user-title" class="text-sm font-semibold">Criar Novo Usuário</h2>
+          <p class="mt-1 text-xs leading-5 text-gray-500">Adicione uma nova pessoa ao seu time.</p>
+          <form [formGroup]="userForm" (ngSubmit)="createUser()" class="mt-5">
+            <fieldset [disabled]="savingUser() || loading() || !apiReady()" class="space-y-4 disabled:opacity-40">
+              <div><label for="user-name" class="field-label">Nome</label><input id="user-name" formControlName="name" autocomplete="name" maxlength="100" placeholder="Nome completo" class="field-input" />@if (userForm.controls.name.touched && userForm.controls.name.invalid) { <p role="alert" class="mt-2 text-xs text-gray-600">Informe um nome de até 100 caracteres.</p> }</div>
+              <div><label for="user-email" class="field-label">E-mail</label><input id="user-email" type="email" formControlName="email" autocomplete="email" maxlength="254" placeholder="nome@empresa.com" class="field-input" />@if (userForm.controls.email.touched && userForm.controls.email.invalid) { <p role="alert" class="mt-2 text-xs text-gray-600">Informe um e-mail válido de até 254 caracteres.</p> }</div>
+              <div><label for="user-password" class="field-label">Senha inicial</label><input id="user-password" type="password" formControlName="password" autocomplete="new-password" class="field-input" /><p class="mt-1 text-xs text-gray-500">Mínimo de 12 caracteres e máximo de 72 bytes.</p></div><div><label for="user-role" class="field-label">Perfil</label><select id="user-role" formControlName="role" class="field-input"><option value="Dev">Dev</option><option value="Admin">Admin</option></select></div>
+              <button type="submit" class="primary-button">{{ savingUser() ? 'Salvando…' : 'Salvar' }}</button>
+            </fieldset>
+          </form>
+          <div class="mt-6 border-t border-gray-100 pt-4"><h3 class="mb-3 text-xs font-medium text-gray-500">Pessoas · {{ users().length }}</h3><ul class="max-h-40 space-y-3 overflow-y-auto">@for (user of users(); track user.id) { <li class="flex min-w-0 items-center gap-2"><span aria-hidden="true" class="grid h-7 w-7 shrink-0 place-items-center rounded bg-gray-100 text-xs">{{ user.name.charAt(0) }}</span><div class="min-w-0"><p class="truncate text-xs font-medium">{{ user.name }}</p><p class="truncate text-[11px] text-gray-400">{{ user.email }}</p></div></li> }</ul></div>
+        </section>
+        }
+      </div>
+      <section id="focus-history" aria-labelledby="focus-history-title" class="scroll-mt-6 border-t border-gray-200 pt-8">
+        <div class="mb-5 flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h2 id="focus-history-title" class="text-sm font-semibold">Histórico de horas de foco</h2>
+            <p class="mt-1 text-xs leading-5 text-gray-500">Sessões mais recentes primeiro. Datas no horário de Fortaleza (UTC−3).</p>
+          </div>
+          @if (apiReady() && !historyFilterError()) {
+            <p role="status" aria-live="polite" class="text-xs text-gray-500">{{ filteredFocusHistory().length }} de {{ focusHistory().length }} sessões <span class="mx-2">·</span> Total filtrado: {{ totalFocusMinutes() }} minutos</p>
+          }
+        </div>
+        <form [formGroup]="historyFilterForm" class="mb-5 grid items-end gap-4 sm:grid-cols-2 lg:grid-cols-4" aria-label="Filtros do histórico de foco">
+          <div>
+            <label for="history-user" class="field-label">Filtrar por usuário</label>
+            <select id="history-user" formControlName="user_id" class="field-input">
+              <option [ngValue]="null">Todos os usuários</option>
+              @for (user of users(); track user.id) { <option [ngValue]="user.id">{{ user.name }}</option> }
+            </select>
+          </div>
+          <div>
+            <label for="history-start" class="field-label">Data inicial</label>
+            <input id="history-start" type="date" formControlName="start_date" class="field-input" aria-describedby="history-period-help" [attr.aria-invalid]="historyFilterError() ? 'true' : null" />
+          </div>
+          <div>
+            <label for="history-end" class="field-label">Data final</label>
+            <input id="history-end" type="date" formControlName="end_date" class="field-input" aria-describedby="history-period-help" [attr.aria-invalid]="historyFilterError() ? 'true' : null" />
+          </div>
+          <button type="button" (click)="clearHistoryFilters()" class="rounded-md border border-gray-200 px-4 py-2 text-sm hover:bg-gray-100">Limpar filtros</button>
+          <p id="history-period-help" class="text-xs text-gray-500 sm:col-span-2 lg:col-span-4">Filtros aplicados automaticamente. O período inclui os dias inicial e final completos (UTC−3); deixe uma data vazia para não limitar esse lado do período.</p>
+        </form>
+        @if (loading()) {
+          <p role="status" class="py-6 text-sm text-gray-500">Carregando histórico…</p>
+        } @else if (!apiReady()) {
+          <p class="rounded-md border border-gray-200 p-4 text-sm text-gray-500">Não foi possível carregar o histórico. Use Atualizar para tentar novamente.</p>
+        } @else if (historyFilterError()) {
+          <p role="alert" class="rounded-md border border-gray-200 p-4 text-sm">{{ historyFilterError() }}</p>
+        } @else if (filteredFocusHistory().length === 0) {
+          <p class="rounded-md border border-dashed border-gray-200 p-6 text-center text-sm text-gray-500">{{ focusHistory().length === 0 ? 'Nenhuma sessão registrada. Registre seus primeiros minutos de foco acima.' : 'Nenhuma sessão encontrada para os filtros selecionados.' }}</p>
+        } @else {
+          <div class="overflow-x-auto rounded-md border border-gray-200">
+            <table class="w-full text-left text-sm">
+              <caption class="sr-only">Histórico das sessões de foco registradas</caption>
+              <thead class="border-b border-gray-200 bg-gray-50 text-xs text-gray-500">
+                <tr><th scope="col" class="px-4 py-3 font-medium">Usuário</th><th scope="col" class="px-4 py-3 text-right font-medium">Minutos</th><th scope="col" class="px-4 py-3 font-medium">Data e hora</th></tr>
+              </thead>
+              <tbody class="divide-y divide-gray-100">
+                @for (session of filteredFocusHistory(); track session.id) {
+                  <tr class="hover:bg-gray-50">
+                    <td class="px-4 py-3 font-medium">{{ session.user_name }}</td>
+                    <td class="px-4 py-3 text-right tabular-nums">{{ session.duration_minutes }}</td>
+                    <td class="whitespace-nowrap px-4 py-3 text-gray-500"><time [attr.datetime]="session.logged_date">{{ formatFocusDate(session.logged_date) }}</time></td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </section>
+      <footer class="border-t border-gray-100 pt-5 text-xs text-gray-400">TaskCorp Insights <span class="mx-2">·</span> Menos ruído. Mais foco.</footer>
+    </main>
+  </div>
+</div>
+
+
+
+
+

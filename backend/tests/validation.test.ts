@@ -1,0 +1,15 @@
+import assert from 'node:assert/strict';
+import { createUserSchema, focusSchema, idParams, registerSchema, taskSchema } from '../src/validation';
+const registration = { name: ' Ana ', email: ' ANA@EXAMPLE.COM ', password: 'abcdefghijkl' };
+assert.equal(registerSchema.parse(registration).name, 'Ana');
+assert.equal(registerSchema.parse(registration).email, 'ana@example.com');
+assert.equal(registerSchema.safeParse({ ...registration, role: 'Admin' }).success, false);
+assert.equal(registerSchema.safeParse({ ...registration, is_active: true }).success, false);
+assert.equal(registerSchema.safeParse({ ...registration, password: 'short' }).success, false);
+assert.equal(createUserSchema.parse({ name: ' Ana ', email: ' ANA@EXAMPLE.COM ', password: 'abcdefghijkl' }).email, 'ana@example.com');
+assert.equal(createUserSchema.safeParse({ name: 'Ana', email: 'a@example.com', password: 'á'.repeat(37) }).success, false);
+assert.equal(createUserSchema.safeParse({ name: 'Ana', email: 'a@example.com', password: 'abcdefghijkl', is_active: true }).success, false);
+for (const value of [-1, 0, 1.5, 1441, '30']) assert.equal(focusSchema.safeParse({ user_id: 1, duration_minutes: value }).success, false);
+for (const value of ['1 OR 1=1', '2147483648', '-1']) assert.equal(idParams.safeParse({ id: value }).success, false);
+assert.equal(taskSchema.safeParse({ title: ' ', assigned_to: 1 }).success, false);
+console.log('PASS: validação e limites de entrada.');

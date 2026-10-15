@@ -1,0 +1,2 @@
+BACKUP DATABASE TaskCorpInsights TO DISK = '$(DifferentialBackupPath)' WITH DIFFERENTIAL, CHECKSUM, COMPRESSION;
+GO

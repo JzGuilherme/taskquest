@@ -1,0 +1,2 @@
+BACKUP LOG TaskCorpInsights TO DISK = '$(LogBackupPath)' WITH CHECKSUM, COMPRESSION;
+GO

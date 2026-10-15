@@ -1,0 +1,2 @@
+RESTORE LOG TaskCorpInsights FROM DISK = '$(LogBackupPath)' WITH NORECOVERY, CHECKSUM;
+GO

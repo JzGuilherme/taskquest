@@ -1,0 +1,20 @@
+@import "tailwindcss";
+
+@layer components {
+  .field-label { @apply mb-1.5 block text-xs font-medium text-gray-600; }
+  .field-input { @apply w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm text-gray-800 placeholder:text-gray-400; }
+  .primary-button { @apply rounded-md bg-black px-4 py-2 text-xs font-medium text-white hover:bg-gray-800 disabled:opacity-40; }
+}
+
+html { scroll-behavior: smooth; }
+body { margin: 0; }
+button:not(:disabled) { cursor: pointer; }
+button:disabled { cursor: not-allowed; }
+input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-visible, a:focus-visible {
+  outline: 2px solid #6b7280;
+  outline-offset: 3px;
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+}
+

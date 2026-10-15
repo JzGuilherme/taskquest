@@ -1,0 +1,8 @@
+node_modules
+dist
+.angular
+.env
+.env.*
+
+node_modules.before-security
+package-lock.before-security.json

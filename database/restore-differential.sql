@@ -1,0 +1,2 @@
+RESTORE DATABASE TaskCorpInsights FROM DISK = '$(DifferentialBackupPath)' WITH NORECOVERY, CHECKSUM;
+GO

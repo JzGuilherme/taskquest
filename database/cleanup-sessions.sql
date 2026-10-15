@@ -1,0 +1,2 @@
+DELETE FROM dbo.AuthFamilies WHERE expires_at < DATEADD(DAY, -1, SYSUTCDATETIME());
+GO
