@@ -10,6 +10,26 @@ Aplicações web corporativas para gestão de tarefas e controle de produtividad
 
 O **TaskCorp Insights** é um sistema completo de gestão de entregas e produtividade, contando com autenticação, autorização baseada em cargos (RBAC) e persistência em banco relacional **SQL Server**.
 
+## 🖥️ Telas do Sistema
+
+As telas de acesso foram capturadas em viewport desktop (1440 × 1000). O quadro do painel mostra as três colunas em layout desktop, com dados fictícios de demonstração.
+
+### Login
+
+<img src="docs/screenshots/login.png" alt="Tela de login em resolução desktop" width="100%">
+
+### Cadastro
+
+<img src="docs/screenshots/cadastro.png" alt="Tela de cadastro em resolução desktop" width="100%">
+
+### Recuperação de Senha
+
+<img src="docs/screenshots/recuperacao.png" alt="Tela de recuperação de senha em resolução desktop" width="100%">
+
+### Painel de Tarefas
+
+<img src="docs/screenshots/painel-desktop.png" alt="Quadro de tarefas em três colunas no layout desktop" width="100%">
+
 ---
 
 ## 🛠️ Tecnologias Utilizadas
