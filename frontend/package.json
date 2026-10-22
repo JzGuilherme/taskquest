@@ -22,7 +22,7 @@
     "@angular/compiler-cli": "20.3.34",
     "@tailwindcss/postcss": "^4.1.0",
     "tailwindcss": "^4.1.0",
-    "postcss": "^8.5.0",
+    "postcss": "^8.5.31",
     "typescript": "~5.9.2"
   }
 }
